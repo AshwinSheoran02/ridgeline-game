@@ -134,16 +134,16 @@ function buildForest(){const trees=[];const ok=(x,z,r)=>{for(const t of trees)if
     for(let i=0;i<220;i++){const x=sx*sr(56,95),z=sr(-71,62);tuft(x,z,M.grass,sr(.6,1.1));}
     for(let i=0;i<40;i++)rock(sx*sr(58,95),sr(-71,62),sr(.2,.5));}
   let n=0;for(let i=0;i<4000&&n<900;i++){const x=sr(-520,520),z=sr(-560,480);if(x>-102&&x<102&&z>-80&&z<90)continue;if(z>63&&z<90&&Math.abs(x)<300)continue;const h=Hx(x,z);if(h>95||h<-4)continue;deodar(x,z,sr(10,18),true);n++;}}
-function gasSpots(){const want=(x,z,y)=>{if(CYLS.length>=40)return;y=y??Hx(x,z);if(y<WATER+.2)return;if(!clearAt(x,z,y+.05,y+.75,.22))return;for(const g of CYLS)if(Math.hypot(g.x-x,g.z-z)<.4)return;lpg(x,z,y);if(Math.random()<.35&&clearAt(x+.38,z,y+.05,y+.75,.22))lpg(x+.38,z+rand(-.05,.05),y);};
-  for(let i=0;i<8;i++)want(rand(-54,54),31.9);
-  for(const lx of [-44,-22,22,44])for(let k=0;k<2;k++)want(lx+(Math.random()<.5?-1.45:1.45),rand(14,29),0);
-  for(const b of buildings){if(Math.random()>.18)continue;const sd=Math.random()<.5?-1:1;want(b.x+sd*(b.w/2+.3),b.z+rand(-b.d/3,b.d/3),b.y);}
-  for(let i=0;i<4;i++)want(rand(-50,50),-23.5,9);}
+function gasSpots(){const want=(x,z,y)=>{if(CYLS.length>=40)return;y=y??Hx(x,z);if(y<WATER+.2)return;if(!clearAt(x,z,y+.05,y+.75,.22))return;for(const g of CYLS)if(Math.hypot(g.x-x,g.z-z)<.4)return;lpg(x,z,y);if(srand()<.35&&clearAt(x+.38,z,y+.05,y+.75,.22))lpg(x+.38,z+sr(-.05,.05),y);};
+  for(let i=0;i<8;i++)want(sr(-54,54),31.9);
+  for(const lx of [-44,-22,22,44])for(let k=0;k<2;k++)want(lx+(srand()<.5?-1.45:1.45),sr(14,29),0);
+  for(const b of buildings){if(srand()>.18)continue;const sd=srand()<.5?-1:1;want(b.x+sd*(b.w/2+.3),b.z+sr(-b.d/3,b.d/3),b.y);}
+  for(let i=0;i<4;i++)want(sr(-50,50),-23.5,9);}
 function decorate(){const y1=4.5;
   for(let x=-50;x<=50;x+=rand(7,10)){if(Math.abs(x)<11||Math.abs((x%12+12)%12)<1.2)continue;garland(x,y1+5.6,-3.5,x+rand(-2,2),y1+5.4,-9.5,.9);}
   for(const lx of [-44,-22,22,44])for(let z=14;z<29;z+=rand(4,6))garland(lx-1.75,4.4,z,lx+1.75,4.5,z+rand(-.4,.4),.35);
   for(let z=13;z<29;z+=5)garland(-4,5,z,4,5,z+rand(-.5,.5),.7);
-  for(const [x,z] of [[0,-13.4],[8.3,1.6],[-8.3,1.6],[-15,7.5],[15,7.5],[-40,7.5],[40,7.5],[-27,7.5],[27,7.5]]){const y=Hx(x,z);box(x,y,z,1.8,.45,1.8,M.stone,{ts:1});broadTree(x,z,rand(.7,.85),y+.45);for(let k=0;k<4;k++)tuft(x+rand(-.6,.6),z+rand(-.6,.6),M.flowers,.7,y+.45);}
+  for(const [x,z] of [[0,-13.4],[8.3,1.6],[-8.3,1.6],[-15,7.5],[15,7.5],[-40,7.5],[40,7.5],[-27,7.5],[27,7.5]]){const y=Hx(x,z);box(x,y,z,1.8,.45,1.8,M.stone,{ts:1});broadTree(x,z,sr(.7,.85),y+.45);for(let k=0;k<4;k++)tuft(x+rand(-.6,.6),z+rand(-.6,.6),M.flowers,.7,y+.45);}
   for(let i=0;i<70;i++){const x=rand(-58,58),z=rand(-71,-47);const h=Hx(x,z);if(Math.abs(x)<12&&z<-55)continue;tuft(x,z,M.flowers,rand(.6,1));}
   for(let i=0;i<160;i++){const sx=Math.random()<.5?-1:1,x=sx*rand(61,94),z=rand(-70,52);if(Math.abs(x)>70&&Math.abs(z)<24)continue;if(Math.abs(z+6.5)<5.5)continue;tuft(x,z,Math.random()<.35?M.flowers:M.fern,rand(.6,1));}
   const fp=[];const step=1.5;for(let x=-62;x<=62;x+=step){let z=40;while(z<64&&Hx(x,z)>WATER)z+=.25;if(z>=64)continue;fp.push([x,z]);}

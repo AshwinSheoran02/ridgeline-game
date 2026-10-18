@@ -1,15 +1,18 @@
 /* ================= Flow ================= */
 function regen(dt){for(const s of soldiers)if(s.alive&&s.hp<100&&G.time-s.lastHurt>4.5)s.hp=Math.min(100,s.hp+dt*22);}
-function endMatch(){if(G.state==='over')return;G.state='over';G.started=false;try{document.exitPointerLock();}catch(e){}
+function endMatch(){if(G.state==='over')return;if(NET.host&&NET.started)netBc({t:'end',sc:G.score});const online=NET.on;if(online)NET.started=false;G.state='over';G.started=false;document.body.classList.remove('ingame');
+  $('again').textContent=online?(NET.host?'RESTART MATCH':'WAITING FOR HOST'):'PLAY AGAIN';$('again').disabled=online&&!NET.host;try{document.exitPointerLock();}catch(e){}
   const win=G.score[0]===G.score[1]?-1:(G.score[0]>G.score[1]?0:1);$('resultText').textContent=win<0?'DRAW':(win===0?'ALPHA WINS':'BRAVO WINS');$('resultText').style.color=win<0?'var(--ink)':(win===0?'var(--alpha)':'var(--bravo)');
   $('finalScore').textContent='ALPHA '+G.score[0]+' : '+G.score[1]+' BRAVO';$('stK').textContent=player.kills;$('stD').textContent=player.deaths;$('stH').textContent=player.heads;$('stF').textContent=player.frags||0;
   const rows=soldiers.slice().sort((a,b)=>b.kills-a.kills||a.deaths-b.deaths);$('endTable').innerHTML='<tr><td></td><td>K</td><td>D</td></tr>'+rows.map(s=>`<tr class="${s.isPlayer?'me':''}"><td class="${s.team?'b':'a'}">${s.name}</td><td>${s.kills}</td><td>${s.deaths}</td></tr>`).join('');
   $('hud').hidden=true;$('touch').hidden=true;$('end').hidden=false;arcPts.visible=false;landRing.visible=false;G.menuT=0;}
+function goFull(){try{const d=document.documentElement;if(!document.fullscreenElement&&d.requestFullscreen)d.requestFullscreen({navigationUI:'hide'}).catch(()=>{});}catch(e){}}
 function showMenu(){$('menu').hidden=false;$('setDrawer').hidden=true;$('ctlDrawer').hidden=true;$('tipText').textContent=rpick(TIPS);}
-function pause(){if(G.state!=='playing')return;G.state='paused';showMenu();$('hud').hidden=true;$('touch').hidden=true;$('deploy').textContent='RESUME';$('restart').hidden=false;IN.mouse.l=IN.mouse.r=false;TC.fire=null;TC.gren=false;TC.look.clear();$('board').hidden=true;try{document.exitPointerLock();}catch(e){}try{speechSynthesis.cancel();}catch(e){}}
-function play(restart){AU.init();if(restart||!G.started)resetMatch();G.state='playing';$('menu').hidden=true;$('end').hidden=true;$('hud').hidden=false;$('touch').hidden=!isTouch;
+function pause(){if(G.state!=='playing')return;G.state='paused';document.body.classList.remove('ingame');showMenu();$('hud').hidden=true;$('touch').hidden=true;$('deploy').textContent='RESUME';$('restart').hidden=false;IN.mouse.l=IN.mouse.r=false;TC.fire=null;TC.gren=false;TC.look.clear();$('board').hidden=true;try{document.exitPointerLock();}catch(e){}try{speechSynthesis.cancel();}catch(e){}}
+function play(restart){AU.init();if(NET.on){if(!NET.started){netOpenDrawer();return;}restart=false;}if(restart||!G.started)resetMatch();G.state='playing';document.body.classList.add('ingame');$('netDrawer').hidden=true;$('setDrawer').hidden=true;$('ctlDrawer').hidden=true;if(isTouch)goFull();$('menu').hidden=true;$('end').hidden=true;$('hud').hidden=false;$('touch').hidden=!isTouch;
   for(const k in keys)keys[k]=false;IN.look.x=IN.look.y=0;setVM();if(!isTouch&&!padActive)requestLock();canvas.focus();}
-$('deploy').onclick=()=>play(false);$('restart').onclick=()=>play(true);$('again').onclick=()=>play(true);
+function netAwareRestart(){if(NET.on){if(NET.host)netStartMatch();else toast('Only the host can restart the match');return;}play(true);}
+$('deploy').onclick=()=>play(false);$('restart').onclick=netAwareRestart;$('again').onclick=netAwareRestart;
 $('toMenu').onclick=()=>{$('end').hidden=true;G.state='menu';$('deploy').textContent='DEPLOY';$('restart').hidden=true;showMenu();};
 $('openSettings').onclick=()=>{$('ctlDrawer').hidden=true;$('setDrawer').hidden=false;$('closeSettings').focus();};$('closeSettings').onclick=()=>{$('setDrawer').hidden=true;$('openSettings').focus();};
 $('openControls').onclick=()=>{$('setDrawer').hidden=true;$('ctlDrawer').hidden=false;$('closeControls').focus();};$('closeControls').onclick=()=>{$('ctlDrawer').hidden=true;$('openControls').focus();};
@@ -49,19 +52,20 @@ function dynRes(dt){RES.t+=dt;RES.n++;if(RES.t<2)return;const fps=RES.n/RES.t;RE
   if(fps<48&&RES.s>.65)ns=Math.max(.65,RES.s-.1);else if(fps>58&&RES.s<1)ns=Math.min(1,RES.s+.05);if(ns!==RES.s){RES.s=ns;resize();}}
 function perfCheck(dt){if(PERF.done)return;PERF.t+=dt;PERF.n++;if(PERF.t<6)return;const fps=PERF.n/PERF.t;PERF.t=0;PERF.n=0;
   if(fps<32&&settings.quality!=='low'){settings.quality=settings.quality==='high'?'med':'low';store.set('quality3',settings.quality);gfxSeg();applyQuality();toast('Graphics lowered to '+settings.quality.toUpperCase()+' for a smoother frame rate');}else PERF.done=true;}
-function simStep(dt,pad){G.time+=dt;G.clock-=dt;if(G.clock<=0){G.clock=0;endMatch();}
+function simStep(dt,pad){if(NET.started){netStep(dt,pad,false);return;}G.time+=dt;G.clock-=dt;if(G.clock<=0){G.clock=0;endMatch();}
   updatePlayer(dt,pad);for(const s of soldiers)if(!s.isPlayer)updateBot(s,dt);updateGrenades(dt);updateGas(dt);regen(dt);updateSpotting(dt);}
 function frame(now){requestAnimationFrame(frame);const dt=clamp((now-last)/1000,0,.05);last=Math.max(last,now);WIND.value+=dt;
   const pad=readPad();
   if(pad&&pad.start&&(G.state==='menu'||G.state==='paused'))play(false);
-  if(pad&&pad.jump&&G.state==='over')play(true);
+  if(pad&&pad.jump&&G.state==='over')netAwareRestart();
   ringT=Math.max(0,ringT-dt);flashT=Math.max(0,flashT-dt*1.4);
   if(G.state==='playing'){if(!window.__noPerf){perfCheck(dt);dynRes(dt);}simStep(dt,pad);if(G.state==='playing'){updateVM(dt);updateHUD(dt);}placeSun(player.pos.x,player.pos.z);}
+  else if(NET.started&&G.state==='paused'){netStep(dt,null,true);placeSun(player.pos.x,player.pos.z);}
   else if(!G.started||G.state==='over'){cinematic(dt);if(camera.fov!==62){camera.fov=62;camera.updateProjectionMatrix();}G.time+=dt;
     for(const s of soldiers)if(!s.isPlayer&&s.alive&&s.model)s.model.root.visible=false;}
   if(renderer.shadowMap.enabled){const half=settings.quality==='med'||RES.s<1;renderer.shadowMap.autoUpdate=!half;if(half){shF^=1;if(shF)renderer.shadowMap.needsUpdate=true;}}
   updateFX(dt);detailCull(dt);AU.ambient(dt);T.waterN.offset.set(WIND.value*.012,WIND.value*.007);T.foam.offset.set(WIND.value*.01,Math.sin(WIND.value*.7)*.06);sky.position.copy(camera.position);
-  renderFrame(G.state==="playing"&&!P.dead&&!window.__noVM);}
+  if(!window.__noRender)renderFrame(G.state==="playing"&&!P.dead&&!window.__noVM);}
 
 /* ================= Loading screen ================= */
 function paintLoader(){const cv=$('loadArt');const dpr=Math.min(devicePixelRatio||1,2);const W=cv.width=Math.round(innerWidth*dpr),H=cv.height=Math.round(innerHeight*dpr);const g=cv.getContext('2d');const R=rand;
@@ -103,8 +107,8 @@ async function boot(){paintLoader();resize();
     const views=[[0,30,70,0,0,0],[-80,8,0,0,5,0],[0,16,-40,0,10,-65],[40,6,-5,0,5,-5]];for(const [x,y,z,a,b,c] of views){camera.position.set(x,y,z);camera.lookAt(a,b,c);placeSun(x,z);renderFrame(true);}
     for(const s of soldiers)if(s.model)s.model.root.visible=false;for(const k in VMS)VMS[k].g.visible=false;VMG.visible=false;});
   LD.real=1;while(ldTick()<1)await wait(50);clearInterval(ldTimer);
-  G.started=false;drawMapPreview();showMenu();$('loader').classList.add('out');setTimeout(()=>{$('loader').hidden=true;},900);
+  G.started=false;drawMapPreview();showMenu();netAfterBoot();$('loader').classList.add('out');setTimeout(()=>{$('loader').hidden=true;},900);
   last=performance.now();requestAnimationFrame(frame);
-  window.__dustline={CYLS,hitGas,scene,M,CompMat,ShaftMat,cine:(i)=>{if(i!=null){cineI=i;cineT=3;}return [cineI,cineT,ShaftMat.uniforms.str.value,CompMat.uniforms.flash.value,camera.position.toArray()];},endMatch,findLedge,spawnPoint,inHalf,SPLIT,applyDamage,WEAP,G,P,soldiers:()=>soldiers,player:()=>player,colliders,cover:COV,nav:NAV,renderer,camera,play,keys,settings,IN,VMS,updateVM,setVM,POST,gList,spawnGrenade,explode,placeSun,Hx,
+  window.__dustline={NET,netHost,netJoin,netStartMatch,netLeave,CYLS,hitGas,scene,M,CompMat,ShaftMat,cine:(i)=>{if(i!=null){cineI=i;cineT=3;}return [cineI,cineT,ShaftMat.uniforms.str.value,CompMat.uniforms.flash.value,camera.position.toArray()];},endMatch,findLedge,spawnPoint,inHalf,SPLIT,applyDamage,WEAP,G,P,soldiers:()=>soldiers,player:()=>player,colliders,cover:COV,nav:NAV,renderer,camera,play,keys,settings,IN,VMS,updateVM,setVM,POST,gList,spawnGrenade,explode,placeSun,Hx,
     step:(dt)=>{simStep(dt,null);updateFX(dt);for(const s of soldiers)if(s.model)s.model.root.updateMatrixWorld(true);}};}
 boot();

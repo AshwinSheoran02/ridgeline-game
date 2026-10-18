@@ -12,7 +12,7 @@ const pick=a=>a[(srand()*a.length)|0];
 const rpick=a=>a[(Math.random()*a.length)|0];
 const $=id=>document.getElementById(id);
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const isTouch=!!(window.matchMedia&&matchMedia('(pointer: coarse)').matches);
+let isTouch=!!(window.matchMedia&&(matchMedia('(pointer: coarse)').matches||(navigator.maxTouchPoints>0&&!matchMedia('(hover: hover)').matches)))||/iPad|iPhone|Android/i.test(navigator.userAgent);
 const store={get(k,d){try{const v=localStorage.getItem('dustline.'+k);return v==null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem('dustline.'+k,v);}catch(e){}}};
 const settings={quality:store.get('quality3',isTouch?'low':'high'),sens:parseFloat(store.get('sens','1'))||1,squad:parseInt(store.get('squad','5'))||5,voice:store.get('voice','on')!=='off',fov:parseFloat(store.get('fov','75'))||75,vol:parseFloat(store.get('vol','0.8')),spawn:store.get('spawn','halves')};if(isNaN(settings.vol))settings.vol=.8;
 if(!['low','med','high'].includes(settings.quality))settings.quality='high';
@@ -37,7 +37,7 @@ const vmScene=new THREE.Scene();
 const vmCam=new THREE.PerspectiveCamera(56,1,0.01,10);
 
 const RES={s:1,t:0,n:0,cool:0};
-function pixelRatio(){const d=devicePixelRatio||1;return RES.s*settings.quality==='high'?Math.min(d,isTouch?1.5:1.75):settings.quality==='med'?Math.min(d,1.25):Math.min(d,1);}
+function pixelRatio(){const d=devicePixelRatio||1;const base=settings.quality==='high'?Math.min(d,isTouch?1.5:1.75):settings.quality==='med'?Math.min(d,1.25):Math.min(d,1);return Math.max(.5,base*RES.s);}
 function resize(){const w=innerWidth,h=innerHeight;renderer.setPixelRatio(pixelRatio());renderer.setSize(w,h,false);
   camera.aspect=vmCam.aspect=w/h;camera.updateProjectionMatrix();vmCam.updateProjectionMatrix();if(typeof resizePost==='function')resizePost();}
 addEventListener('resize',()=>resize());

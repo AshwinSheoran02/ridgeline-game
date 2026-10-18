@@ -35,7 +35,7 @@ function updateFX(dt){
 
 /* ================= Grenades ================= */
 const GFUSE=3.4;const gList=[];const gPool=[];
-function spawnGrenade(owner,from,vel,fuse){const m=gPool.pop()||makeGrenadeMesh();if(!m.parent)scene.add(m);m.visible=true;m.position.copy(from);
+function spawnGrenade(owner,from,vel,fuse){if(NET.client){if(owner===player)netSend({t:'gr',f:pk3(from),v:pk3(vel),u:Math.round(fuse*1000)/1000});return;}const m=gPool.pop()||makeGrenadeMesh();if(!m.parent)scene.add(m);m.visible=true;m.position.copy(from);
   gList.push({pos:from.clone(),vel:vel.clone(),fuse,owner,team:owner.team,m,t0:G.time,lastClink:-9,spin:new V3(rand(-12,12),rand(-12,12),rand(-12,12))});}
 function gBounce(g,nx,ny,nz){const vn=g.vel.x*nx+g.vel.y*ny+g.vel.z*nz;if(vn>=0)return;g.vel.x-=1.35*vn*nx;g.vel.y-=1.35*vn*ny;g.vel.z-=1.35*vn*nz;g.vel.multiplyScalar(ny>.5?.68:.82);g.spin.multiplyScalar(.7);
   if(-vn>2.2&&G.time-g.lastClink>.08){g.lastClink=G.time;if(player)AU.clink(g.pos.distanceTo(player.pos),AU.panFor(g.pos));}}
@@ -52,13 +52,13 @@ function updateGrenades(dt){for(let i=gList.length-1;i>=0;i--){const g=gList[i];
       const gh=Hx(g.pos.x,g.pos.z);if(g.pos.y<gh+r){g.pos.y=gh+r;const n=tNorm(g.pos.x,g.pos.z);gBounce(g,n.x,n.y,n.z);}
       g.pos.x=clamp(g.pos.x,BOUND.x0,BOUND.x1);g.pos.z=clamp(g.pos.z,BOUND.z0,BOUND.z1);}
     g.m.position.copy(g.pos);const sp=Math.min(1,g.vel.length()/3);g.m.rotation.x+=g.spin.x*dt*sp;g.m.rotation.z+=g.spin.z*dt*sp;}}
-function explode(p,owner,EW,R=7.5,DMG=145,big=false){EW=EW||WEAP.frag;const c=new V3(p.x,p.y+.25,p.z);const wet=p.y<WATER+.05;
-  for(const g of CYLS){if(g.state===3||g.state===2)continue;const dd=Math.hypot(g.x-c.x,g.y+.3-c.y,g.z-c.z);if(dd<(big?5.5:4))igniteGas(g,owner,rand(.12,.38));}
+function explode(p,owner,EW,R=7.5,DMG=145,big=false){EW=EW||WEAP.frag;const c=new V3(p.x,p.y+.25,p.z);const wet=p.y<WATER+.05;if(NET.host&&NET.started)netBc({t:'bm',p:pk3(p),b:big?1:0});
+  if(!NET.client){for(const g of CYLS){if(g.state===3||g.state===2)continue;const dd=Math.hypot(g.x-c.x,g.y+.3-c.y,g.z-c.z);if(dd<(big?5.5:4))igniteGas(g,owner,rand(.12,.38));}
   for(const s of soldiers){if(!s.alive)continue;if(owner&&s.team===owner.team&&s!==owner)continue;
     const tx=s.pos.x,ty=s.pos.y+s.h*.55,tz=s.pos.z;const d=Math.hypot(tx-c.x,ty-c.y,tz-c.z);if(d>R)continue;
     if(!losClear(c.x,c.y,c.z,tx,ty,tz)&&!losClear(c.x,c.y,c.z,tx,s.pos.y+s.h-.1,tz))continue;
     applyDamage(s,DMG*Math.pow(1-d/R,1.25),owner||s,EW,false,{blast:true,cx:c.x,cy:c.y,cz:c.z,mag:7});}
-  for(const s of soldiers)if(s.alive&&!s.isPlayer&&s.pos.distanceTo(c)<15)s.suppressT=G.time;
+  for(const s of soldiers)if(s.alive&&!s.isPlayer&&s.pos.distanceTo(c)<15)s.suppressT=G.time;}
   const pd=player?player.pos.distanceTo(c):99;
   if(wet){for(let i=0;i<10;i++)spawnPuff(new V3(c.x+rand(-.8,.8),WATER+rand(0,1.5),c.z+rand(-.8,.8)),0xe8f2f4,rand(.8,1.4),rand(.8,1.4),rand(3,6),.75);}
   else{const f=fx.fire.find(t=>t.t<=0)||fx.fire[0];f.s.position.copy(c);f.s.position.y+=.5;f.s.material.rotation=rand(0,TAU);f.t=.32;f.s.visible=true;

@@ -20,7 +20,7 @@ function updatePlayer(dt,pad){const pl=player;
     if(P.killer&&P.killer!==pl){const k=P.killer.pos;const ty=Math.atan2(-(k.x-pl.pos.x),-(k.z-pl.pos.z));pl.yaw+=angDiff(pl.yaw,ty)*Math.min(1,dt*3);}
     camera.position.lerp(_o.set(pl.pos.x,pl.pos.y+.45,pl.pos.z),Math.min(1,dt*3));camera.rotation.set(-.12,pl.yaw,.3);
     const can=P.deathT>1.6;$('respawnHint').innerHTML=can?(isTouch?'Tap to respawn':padActive?'Press <kbd>A</kbd> to respawn':'<kbd>Space</kbd> or <kbd>Click</kbd> to respawn'):'Respawning';
-    if((can&&IN.q.respawn)||G.time>=pl.respawnAt){spawn(pl);setVM();}IN.q.respawn=0;IN.q.jump=0;return;}
+    if(NET.client){if(can&&IN.q.respawn&&G.time-(P.rspT||-9)>1){P.rspT=G.time;netSend({t:'rsp'});}}else if((can&&IN.q.respawn)||G.time>=pl.respawnAt){spawn(pl);setVM();}IN.q.respawn=0;IN.q.jump=0;return;}
   IN.q.respawn=0;
   const fovRatio=camera.fov/settings.fov;
   pl.yaw-=IN.look.x*(P.ads>.5?fovRatio:1);pl.pitch=clamp(pl.pitch-IN.look.y*(P.ads>.5?fovRatio:1),-1.5,1.5);P.swayX=lerp(P.swayX,-IN.look.x*2,.2);P.swayY=lerp(P.swayY,-IN.look.y*2,.2);IN.look.x=IN.look.y=0;
@@ -29,7 +29,7 @@ function updatePlayer(dt,pad){const pl=player;
   if(gKey&&!P.gHold&&P.gren>0&&P.switching<=0&&P.gThrowT<=0){P.gHold=true;P.gCook=G.time;P.reloading=0;AU.pin();}
   if(P.gHold){const cooked=G.time-P.gCook;$('cook').hidden=false;$('cook').style.setProperty('--p',(cooked/GFUSE*100).toFixed(1)+'%');
     grenThrowParams(_gf,_gv);updateArc(_gf,_gv);
-    if(cooked>=GFUSE){P.gHold=false;P.gren--;$('cook').hidden=true;arcPts.visible=false;landRing.visible=false;explode(pl.pos.clone().add(_o.set(0,1,0)),pl);}
+    if(cooked>=GFUSE){P.gHold=false;P.gren--;$('cook').hidden=true;arcPts.visible=false;landRing.visible=false;spawnGrenade(pl,pl.pos.clone().add(_o.set(0,1,0)),new V3(),.001);}
     else if(!gKey){P.gHold=false;P.gren--;P.gThrowT=.4;$('cook').hidden=true;arcPts.visible=false;landRing.visible=false;spawnGrenade(pl,_gf.clone(),_gv.clone(),GFUSE-cooked);AU.whoosh();}}
   if(P.gThrowT>0)P.gThrowT-=dt;
   const busy=P.gHold||P.gThrowT>0;
@@ -85,6 +85,7 @@ function fireWeapon(W){const pl=player;pl.lastFired=G.time;lastShotT=G.time;came
   const vm=VMS[W.id];vmRoot.updateMatrixWorld();vm.muzzle.getWorldPosition(_mz);
   const vis=new V3(_mz.x,_mz.y,_mz.z*.6).applyMatrix4(camera.matrixWorld);
   for(let i=0;i<W.pellets;i++){const a=Math.random()*TAU,r=Math.sqrt(Math.random())*spread;_d.copy(_fw).addScaledVector(_rt,Math.cos(a)*r).addScaledVector(_up3,Math.sin(a)*r).normalize();fireRay(pl,camera.position,_d,W,vis);}
+  if(NET.started){const e=pk3(_end);if(NET.client)netSend({t:'sh',e,w:W.id});else netBc({t:'sh',i:pl.idx,e,w:W.id});}
   const rk=W.recoil*(P.crouch>.5?.8:1);P.recoil+=rk*(1-P.ads*.35);pl.pitch+=rk*.35*(1-P.ads*.4);pl.yaw+=rand(-1,1)*rk*.25;P.kick=1;P.shots++;
   vm.flash.visible=true;vm.flash.material.rotation=Math.random()*TAU;vm.flashT=.045;flashLight.position.copy(camera.position).addScaledVector(_fw,1);flashLight.intensity=3;vmFlashLight.intensity=4;
   AU.shot(W.id,0,true);scareBirds(pl.pos);

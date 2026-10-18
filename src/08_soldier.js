@@ -140,7 +140,7 @@ function animateSoldier(b,dt){const m=b.model;const now=G.time;
   for(let i=0;i<2;i++){const ph=b.phase+i*Math.PI;const s=Math.sin(ph),c=Math.cos(ph);const L=m.legs[i];
     L.hp.rotation.set(A*s*dF+ca*1.28,0,A*.7*s*dS+(i?.05:-.05)*ca);L.kn.rotation.set(-(Bk*Math.pow(Math.max(0,c),1.5)+.06*amt)-ca*2.15,0,0);}
   m.hips.position.y=lerp(.99,.52,ca)-Math.abs(Math.sin(b.phase))*.04*amt*(1-ca);m.hips.rotation.set(0,Math.sin(b.phase)*.1*amt*dF,0);
-  let pitch=0;if(b.visible&&b.target){const t=b.target;pitch=Math.atan2((t.pos.y+t.h*.7)-(b.pos.y+b.h-.3),Math.hypot(t.pos.x-b.pos.x,t.pos.z-b.pos.z));}
+  let pitch=0;if(b.net)pitch=b.aimPitchT||0;else if(b.visible&&b.target){const t=b.target;pitch=Math.atan2((t.pos.y+t.h*.7)-(b.pos.y+b.h-.3),Math.hypot(t.pos.x-b.pos.x,t.pos.z-b.pos.z));}
   b.aimPitch=lerp(b.aimPitch||0,clamp(pitch,-.7,.7),Math.min(1,dt*8));b.kick=Math.max(0,(b.kick||0)-dt*8);
   const lean=-(run*.22+ca*.12);m.chest.rotation.set(b.aimPitch+lean+b.kick*.04,-m.hips.rotation.y,b.flinch>0?Math.sin(b.flinch*60)*.12:0);
   m.head.rotation.set(-b.aimPitch*.2-lean*.5,(b.visible?0:Math.sin(now*.6+b.noise)*.35),0);

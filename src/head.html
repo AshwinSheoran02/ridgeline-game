@@ -110,7 +110,7 @@ button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 #tPause{width:42px;height:42px;border-radius:6px;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));font-size:15px}
 .touchmode #ammo{top:calc(64px + env(safe-area-inset-top,0px));bottom:auto;right:calc(14px + env(safe-area-inset-right,0px))}
 .touchmode #mag{font-size:38px}
-.touchmode #hpBox{left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top,0px));bottom:auto}
+.touchmode #hpBox{left:calc(14px + env(safe-area-inset-left,0px));transform:none;top:calc(172px + env(safe-area-inset-top,0px));bottom:auto}
 .touchmode #hpNum{font-size:28px;min-width:40px}
 .touchmode #hpBar{width:90px}
 .touchmode #mapWrap{width:120px}
@@ -184,6 +184,30 @@ input[type=range]{accent-color:var(--acc);width:150px;max-width:45vw}
 @media (prefers-reduced-motion:reduce){.kf,.rl,#popup,#toast,.arc,#loader{transition:none}}
 .eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--display);font-size:20px;letter-spacing:.24em;color:var(--acc)}
 .eyebrow .bar{width:34px;height:3px;background:var(--acc)}
+.nbtn{all:unset;box-sizing:border-box;cursor:pointer;display:block;text-align:center;font-family:var(--display);font-size:20px;letter-spacing:.14em;color:var(--ink);border:1px solid var(--line);padding:9px 14px 6px;margin:10px 0 0}
+.nbtn.primary{background:var(--acc);color:#1b1208;border-color:var(--acc);font-size:24px}
+.nbtn:hover,.nbtn:focus-visible{border-color:var(--acc)}
+.nbtn[disabled]{opacity:.45;pointer-events:none}
+#netDrawer input{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:16px;padding:7px 10px;min-width:0;border-radius:0}
+#netName{width:170px}
+.joinRow{border-top:0;padding-top:4px}.joinRow input{flex:1;text-transform:uppercase;letter-spacing:.2em;font-family:var(--display);font-size:20px}.joinRow .nbtn{margin:0;padding:8px 18px 5px}
+.nnote{font-size:13px;color:var(--dim);line-height:1.45;margin:12px 0 0}
+.nstatus{font-size:14px;color:var(--acc);min-height:20px;margin:14px 0 0}
+.codeBox{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 8px}.codeBox span{font-family:var(--display);letter-spacing:.2em;color:var(--dim)}.codeBox b{font-family:var(--display);font-size:40px;letter-spacing:.18em;color:var(--acc)}.codeBox .nbtn{margin:0;font-size:16px;padding:6px 10px 3px}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.teams h4{margin:0 0 6px;font-family:var(--display);font-weight:500;letter-spacing:.16em;font-size:18px}.teams .ta{color:var(--alpha)}.teams .tb2{color:var(--bravo)}
+.teams ul{list-style:none;margin:0;padding:0;min-height:40px}.teams li{font-size:15px;padding:6px 8px;border:1px solid rgba(244,239,228,.1);margin-bottom:4px;cursor:default}.teams li.can{cursor:pointer}.teams li.can:hover{border-color:var(--acc)}.teams li small{color:var(--dim);margin-left:6px}
+#netPing{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(6px + env(safe-area-inset-bottom,0px));font-size:11px;letter-spacing:.1em;color:var(--dim);pointer-events:none}
+#rotateHint{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:#0b0d10;color:var(--ink);font-family:var(--display);font-size:28px;letter-spacing:.1em;text-align:center;padding:20px}
+@media (orientation:portrait){.touchmode.ingame #rotateHint{display:flex}}
+.touchmode #joyBase{opacity:.75}
+@media (min-width:900px) and (min-height:600px){.touchmode #joyBase{width:150px;height:150px;left:calc(60px + env(safe-area-inset-left,0px));bottom:calc(60px + env(safe-area-inset-bottom,0px))}.touchmode #joyKnob{width:62px;height:62px;left:44px;top:44px}
+.touchmode #tFire{width:104px;height:104px;right:calc(40px + env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+.touchmode #tAim{width:70px;height:70px;right:calc(160px + env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.touchmode #tJump{width:70px;height:70px;right:calc(158px + env(safe-area-inset-right,0px));bottom:calc(46px + env(safe-area-inset-bottom,0px))}
+.touchmode #tReload{width:58px;height:58px;right:calc(252px + env(safe-area-inset-right,0px));bottom:calc(108px + env(safe-area-inset-bottom,0px))}
+.touchmode #tCrouch{width:58px;height:58px;right:calc(252px + env(safe-area-inset-right,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+.touchmode #tGren{width:58px;height:58px;right:calc(256px + env(safe-area-inset-right,0px));bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+.touchmode #tSwap{right:calc(36px + env(safe-area-inset-right,0px));bottom:calc(200px + env(safe-area-inset-bottom,0px))}}
 </style>
 
 <canvas id="game" tabindex="0"></canvas>
@@ -214,6 +238,8 @@ input[type=range]{accent-color:var(--acc);width:150px;max-width:45vw}
   <div id="board" hidden><div><h3 style="color:var(--alpha)">ALPHA</h3><table id="boardA"></table></div><div><h3 style="color:var(--bravo)">BRAVO</h3><table id="boardB"></table></div></div>
 </div>
 
+<div id="rotateHint"><div>ROTATE YOUR DEVICE</div><small style="font-size:16px;color:var(--dim)">Ridgeline plays in landscape</small></div>
+<div id="netPing" hidden></div>
 <div id="touch" hidden>
   <div id="joyBase"><div id="joyKnob"></div></div>
   <button class="tb" id="tFire">FIRE</button>
@@ -245,6 +271,7 @@ input[type=range]{accent-color:var(--acc);width:150px;max-width:45vw}
   <div class="mLeft">
     <button class="nav primary" id="deploy">DEPLOY</button>
     <button class="nav" id="restart" hidden>RESTART MATCH <small>New spawns, scores reset</small></button>
+    <button class="nav" id="openNet">PLAY ONLINE <small>Host or join friends</small></button>
     <button class="nav" id="openSettings">SETTINGS <small>Graphics, sound, aim</small></button>
     <button class="nav" id="openControls">CONTROLS <small>Keyboard, gamepad, touch</small></button>
   </div>
@@ -267,6 +294,24 @@ input[type=range]{accent-color:var(--acc);width:150px;max-width:45vw}
     <div class="row"><label for="sens">Look speed</label><input type="range" id="sens" min="0.3" max="2.5" step="0.05" value="1"></div>
     <div class="row"><label for="vol">Volume</label><input type="range" id="vol" min="0" max="1" step="0.05" value="0.8"></div>
     <div class="row"><span>Squad voices</span><span class="seg" id="vox"><button data-v="on">ON</button><button data-v="off">OFF</button></span></div>
+  </div>
+  <div class="drawer" id="netDrawer" hidden>
+    <h3>Play online <button id="closeNet">CLOSE</button></h3>
+    <div id="netIntro">
+      <div class="row"><label for="netName">Your name</label><input id="netName" maxlength="14" autocomplete="off" spellcheck="false"></div>
+      <button class="nbtn primary" id="netHost">HOST A GAME</button>
+      <div class="row joinRow"><input id="netCode" maxlength="6" placeholder="ROOM CODE" autocomplete="off" spellcheck="false"><button class="nbtn" id="netJoin">JOIN</button></div>
+      <p class="nnote">Up to 8 players. Bots fill the empty slots. Everyone connects directly to the host, so the host should have the steadiest internet.</p>
+    </div>
+    <div id="netRoom" hidden>
+      <div class="codeBox"><span>ROOM</span><b id="netCodeShow">----</b><button class="nbtn" id="netCopy">COPY INVITE LINK</button></div>
+      <div class="row" id="netModeRow"><span>Mode</span><span class="seg" id="netMode"><button data-m="tdm">TEAM DM</button><button data-m="coop">CO-OP VS BOTS</button></span></div>
+      <div class="teams"><div><h4 class="ta">ALPHA</h4><ul id="netTeamA"></ul></div><div><h4 class="tb2">BRAVO</h4><ul id="netTeamB"></ul></div></div>
+      <p class="nnote" id="netHint">Tap a player to move them to the other team.</p>
+      <button class="nbtn primary" id="netGo">START MATCH</button>
+      <button class="nbtn" id="netLeave">LEAVE ROOM</button>
+    </div>
+    <p class="nstatus" id="netStatus"></p>
   </div>
   <div class="drawer" id="ctlDrawer" hidden>
     <h3>Controls <button id="closeControls">CLOSE</button></h3>

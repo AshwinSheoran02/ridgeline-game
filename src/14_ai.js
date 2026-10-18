@@ -73,7 +73,7 @@ function botShoot(b){const t=b.target;const W=WEAP[b.wid];const eye=eyeOf(b,new 
   const tSpeed=Math.hypot(t.vel.x,t.vel.z);const moving=Math.hypot(b.vel.x,b.vel.z)>1.2;
   let err=(.012+dist*.0009+tSpeed*.0045)/b.skill*(moving?1.7:1)*(b.aimT<.5?1.5:b.aimT>2?.85:1)*(t.isPlayer?1.15:1);if(t.isPlayer&&P.crouch>.5)err*=1.1;
   b.model.root.updateMatrixWorld(true);b.model.muzzle.getWorldPosition(_mz);spawnFlash(_mz);b.lastFired=G.time;lastShotT=G.time;b.kick=1;
-  for(let i=0;i<W.pellets;i++){_d.copy(tgt).sub(eye).normalize();_d.x+=rand(-1,1)*(err+W.spreadHip*.6);_d.y+=rand(-1,1)*(err*.7+W.spreadHip*.4);_d.z+=rand(-1,1)*(err+W.spreadHip*.6);_d.normalize();fireRay(b,eye,_d,W,_mz);}
+  for(let i=0;i<W.pellets;i++){_d.copy(tgt).sub(eye).normalize();_d.x+=rand(-1,1)*(err+W.spreadHip*.6);_d.y+=rand(-1,1)*(err*.7+W.spreadHip*.4);_d.z+=rand(-1,1)*(err+W.spreadHip*.6);_d.normalize();fireRay(b,eye,_d,W,_mz);}if(NET.host&&NET.started)netBc({t:'sh',i:b.idx,e:pk3(_end),w:b.wid});
   AU.shot(b.wid,b.pos.distanceTo(player.pos),false,AU.panFor(b.pos));b.mag--;if(b.mag<=0){b.reloadT=b.reloadTotal=W.shell?2.6:W.reload+.4;callout(b,'reload');}}
 function updateBot(b,dt){const m=b.model;
   if(!b.alive){if(b.rag)ragPose(b,dt);m.marker.visible=false;if(m.label)m.label.visible=false;if(G.time-b.deadAt>5)m.root.visible=false;if(G.time>=b.respawnAt)spawn(b);return;}
@@ -105,7 +105,9 @@ function updateBot(b,dt){const m=b.model;
   b.vel.x=lerp(b.vel.x,mvx*speed,Math.min(1,dt*9));b.vel.z=lerp(b.vel.z,mvz*speed,Math.min(1,dt*9));b.vel.y-=24*dt;moveEntity(b,dt);
   if(mvx||mvz){b.stuckT+=dt;if(b.stuckT>1.5){if(b.pos.distanceTo(b.lastPos)<.5){if(b.onGround){b.vel.y=6;b.wasGround=false;}b.path=null;b.repathAt=0;if(b.state==='toCover'||b.state==='rush'||b.state==='evade')setState(b,'engage');}b.stuckT=0;b.lastPos.copy(b.pos);}}
   b.flinch=Math.max(0,b.flinch-dt);animateSoldier(b,dt);
-  if(b.team===0){m.marker.visible=true;m.label.visible=!!player&&b.pos.distanceTo(player.pos)<60;}
+  botMarkers(b,now);}
+function botMarkers(b,now){const m=b.model;
+  if(b.team===0){m.marker.visible=true;if(m.label)m.label.visible=!!player&&b.pos.distanceTo(player.pos)<(b.human?120:60);}
   else{const show=now-b.spotT<.35||now-b.lastFired<1.2;m.marker.visible=show&&!!player&&player.alive;}
   m.marker.position.y=b.h+.32;if(m.label)m.label.position.y=b.h+.32;}
 let spotTimer=0;const _se=new V3();

@@ -22,7 +22,7 @@ function initGas(){WEAP.gas={id:'gas',name:'GAS CYLINDER'};if(!CYLS.length)retur
   CYLS.forEach((g,i)=>setGasM(g,i));}
 function setGasM(g,i){const wob=g.state===1?Math.sin(G.time*60+i)*.02:0;_ge.set(wob,g.ry,wob*.7);_gq.setFromEuler(_ge);_gp.set(g.x,g.y,g.z);_gs.setScalar(g.state===3?0:1);_gm.compose(_gp,_gq,_gs);
   gasBody.setMatrixAt(i,_gm);gasTop.setMatrixAt(i,_gm);gasBody.instanceMatrix.needsUpdate=true;gasTop.instanceMatrix.needsUpdate=true;}
-function hitGas(g,att,pt){if(g.state===3)return;spawnPuff(pt||g.tp,0xffd090,.12,.15,.2,.9);
+function hitGas(g,att,pt){if(g.state===3)return;if(NET.client){if(att===player){netSend({t:'gas',i:CYLS.indexOf(g)});spawnPuff(pt||g.tp,0xffd090,.12,.15,.2,.9);}return;}spawnPuff(pt||g.tp,0xffd090,.12,.15,.2,.9);
   if(g.state===0){g.state=1;g.t=g.fuse=rand(1.5,2.1);g.owner=att;const d=player?player.pos.distanceTo(g.tp):30;if(AU.ctx)AU.burst(clamp(.5/(1+d/8),.02,.5),4200,g.t,AU.panFor(g.tp),'highpass',.4);}
   else if(g.state===1){g.owner=att||g.owner;g.t=Math.min(g.t,.06);}}
 function igniteGas(g,owner,delay){if(g.state===3||g.state===2)return;if(g.state===1&&g.t<delay)return;g.state=2;g.t=g.fuse=delay;if(!g.owner||owner)g.owner=owner||g.owner;}
@@ -33,9 +33,9 @@ function updateGas(dt){if(!gasBody)return;let jetI=0;
   for(let i=0;i<CYLS.length;i++){const g=CYLS[i];if(g.state===0)continue;
     if(g.state===1||g.state===2){g.t-=dt;if(g.state===1){setGasM(g,i);if(jetI<gasJets.length){const s=gasJets[jetI++];g.jet=s;s.visible=true;s.position.set(g.x+Math.sin(g.ry)*.05,g.y+.86+Math.random()*.05,g.z+Math.cos(g.ry)*.05);s.scale.set(rand(.35,.55),rand(.7,1.1),1);s.material.rotation=rand(-.2,.2);}
         if(Math.random()<dt*14)spawnPuff(new V3(g.x+rand(-.1,.1),g.y+.9,g.z+rand(-.1,.1)),0xd8d4cc,.25,.6,1.2,.35);}
-      if(g.t<=0)boomGas(g,i);}
+      if(g.t<=0&&!NET.client)boomGas(g,i);}
     else if(g.state===3){g.t-=dt;if(g.smokeT>0){g.smokeT-=dt;if(Math.random()<dt*5)spawnPuff(new V3(g.x+rand(-.4,.4),g.y+.3,g.z+rand(-.4,.4)),g.smokeT>5?0x3a3632:0x6a645c,rand(.8,1.4),rand(2.2,3.4),rand(1,1.8),.55);}
-      if(g.t<=0){let near=false;for(const s of soldiers)if(s.alive&&Math.hypot(s.pos.x-g.x,s.pos.z-g.z)<12){near=true;break;}if(near)g.t=5;else resetGasOne(g,i);}}}
+      if(g.t<=0&&!NET.client){let near=false;for(const s of soldiers)if(s.alive&&Math.hypot(s.pos.x-g.x,s.pos.z-g.z)<12){near=true;break;}if(near)g.t=5;else resetGasOne(g,i);}}}
   for(let k=jetI;k<gasJets.length;k++)gasJets[k].visible=false;}
 function resetGasOne(g,i){g.state=0;g.owner=null;g.c.minY=g.y0;g.c.maxY=g.y0+.68;setGasM(g,i);}
 function resetGas(){if(!gasBody)return;CYLS.forEach((g,i)=>resetGasOne(g,i));for(const s of gasJets)s.visible=false;}
